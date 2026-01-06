@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>特征值与特征向量的几何意义演示</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+        }
+        
+        header {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-bottom: 10px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            color: #64b5f6;
+            margin-bottom: 8px;
+            font-size: 2.4rem;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            color: #90a4ae;
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+        
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .matrix-input-section {
+            background: rgba(30, 41, 59, 0.9);
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(100, 181, 246, 0.2);
+            flex: 2;
+            min-height: 400px;
+        }
+        
+        .matrix-input-section h2 {
+            color: #64b5f6;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+        
+        .matrix-input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        
+        .matrix-input-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .matrix-brackets {
+            font-size: 3rem;
+            color: #64b5f6;
+            font-weight: bold;
+            height: 100px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .matrix-cells {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 15px;
+            width: 220px;
+        }
+        
+        .matrix-cell {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .matrix-cell label {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 6px;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .matrix-cell input {
+            padding: 12px 6px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 2px solid #475569;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            text-align: center;
+            color: #f1f5f9;
+            font-weight: 600;
+            transition: all 0.3s;
+            height: 60px;
+            width: 100%;
+        }
+        
+        .matrix-cell input:focus {
+            outline: none;
+            border-color: #64b5f6;
+            box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.2);
+            background: rgba(15, 23, 42, 0.95);
+        }
+        
+        .preset-matrices {
+            margin-top: 20px;
+        }
+        
+        .preset-matrices h3 {
+            color: #cbd5e1;
+            font-size: 1rem;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        
+        .preset-btn {
+            padding: 10px 4px;
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
+            border: 1px solid #475569;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            font-weight: 500;
+            text-align: center;
+            height: 42px;
+        }
+        
+        .preset-btn:hover {
+            background: linear-gradient(145deg, rgba(41, 56, 80, 0.9), rgba(30, 41, 59, 0.9));
+            border-color: #64b5f6;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(100, 181, 246, 0.2);
+        }
+        
+        .preset-btn.active {
+            background: linear-gradient(145deg, #1e88e5, #1565c0);
+            color: white;
+            border-color: #1e88e5;
+            box-shadow: 0 4px 8px rgba(30, 136, 229, 0.4);
+        }
+        
+        .eigenvalues-section {
+            background: rgba(30, 41, 59, 0.9);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(76, 175, 80, 0.2);
+            flex: 1;
+            min-height: 220px;
+        }
+        
+        .eigenvalues-section h2 {
+            color: #4caf50;
+            margin-bottom: 12px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+        
+        .eigen-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        
+        .eigen-value-box {
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 8px;
+            padding: 12px;
+            border-left: 4px solid;
+        }
+        
+        .eigen-value-box:nth-child(1) {
+            border-left-color: #ef5350;
+        }
+        
+        .eigen-value-box:nth-child(2) {
+            border-left-color: #4caf50;
+        }
+        
+        .eigen-label {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+        
+        .eigen-value {
+            font-size: 1.2rem;
+            color: #f1f5f9;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        
+        .eigen-vector {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 6px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            word-break: break-all;
+        }
+        
+        .complex-warning {
+            color: #ff7043;
+            background: rgba(255, 112, 67, 0.1);
+            padding: 8px;
+            border-radius: 6px;
+            margin-top: 10px;
+            border: 1px solid rgba(255, 112, 67, 0.3);
+            display: none;
+            font-size: 0.8rem;
+        }
+        
+        .right-panel {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+        }
+        
+        .visualization-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+        }
+        
+        .visualization-header h2 {
+            color: #64b5f6;
+            font-size: 1.5rem;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            background: rgba(30, 41, 59, 0.7);
+            padding: 6px 10px;
+            border-radius: 6px;
+        }
+        
+        .color-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+        
+        .original-grid-color {
+            background-color: #9e9e9e;
+        }
+        
+        .transformed-grid-color {
+            background-color: #64b5f6;
+        }
+        
+        .eigenvector1-color {
+            background-color: #ef5350;
+        }
+        
+        .eigenvector2-color {
+            background-color: #4caf50;
+        }
+        
+        .visualization-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: calc(100vh - 250px);
+            min-height: 500px;
+        }
+        
+        .canvas-container {
+            background: rgba(30, 41, 59, 0.9);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(100, 181, 246, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .canvas-title {
+            padding: 15px;
+            background: rgba(15, 23, 42, 0.8);
+            border-bottom: 1px solid rgba(100, 181, 246, 0.2);
+            font-size: 1.2rem;
+            color: #f1f5f9;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .canvas-wrapper {
+            flex: 1;
+            position: relative;
+        }
+        
+        canvas {
+            display: block;
+            background: rgba(15, 23, 42, 0.7);
+            width: 100%;
+            height: 100%;
+        }
+        
+        .explanation {
+            grid-column: 1 / -1;
+            background: rgba(30, 41, 59, 0.9);
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 10px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 193, 7, 0.2);
+        }
+        
+        .explanation h3 {
+            color: #ffc107;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .explanation-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+        
+        .explanation-column p {
+            margin-bottom: 12px;
+            color: #cbd5e1;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+        
+        .explanation-column ul {
+            padding-left: 18px;
+            margin-bottom: 12px;
+        }
+        
+        .explanation-column li {
+            margin-bottom: 8px;
+            color: #cbd5e1;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+        
+        .highlight {
+            color: #64b5f6;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+            }
+            
+            .visualization-container {
+                grid-template-columns: 1fr;
+                height: auto;
+                min-height: 400px;
+            }
+            
+            .explanation-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .left-panel {
+                order: 2;
+            }
+            
+            .right-panel {
+                order: 1;
+            }
+            
+            .explanation {
+                order: 3;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .preset-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .legend {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                gap: 15px;
+            }
+            
+            .matrix-cells {
+                width: 200px;
+                gap: 12px;
+            }
+            
+            .matrix-cell input {
+                height: 55px;
+                font-size: 1.1rem;
+            }
+            
+            .preset-btn {
+                height: 38px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-project-diagram"></i> 特征值与特征向量的几何意义</h1>
+            <p class="subtitle">直观演示线性变换中只伸缩不旋转的方向（特征向量）和伸缩比例（特征值）</p>
+        </header>
+        
+        <div class="left-panel">
+            <div class="matrix-input-section">
+                <h2><i class="fas fa-sliders-h"></i> 矩阵输入</h2>
+                
+                <div class="matrix-input-container">
+                    <div class="matrix-input-row">
+                        <div class="matrix-brackets">[</div>
+                        <div class="matrix-cells">
+                            <div class="matrix-cell">
+                                <label>a₁₁</label>
+                                <input type="number" id="a11" value="2" step="0.1">
+                            </div>
+                            <div class="matrix-cell">
+                                <label>a₁₂</label>
+                                <input type="number" id="a12" value="1" step="0.1">
+                            </div>
+                            <div class="matrix-cell">
+                                <label>a₂₁</label>
+                                <input type="number" id="a21" value="1" step="0.1">
+                            </div>
+                            <div class="matrix-cell">
+                                <label>a₂₂</label>
+                                <input type="number" id="a22" value="2" step="0.1">
+                            </div>
+                        </div>
+                        <div class="matrix-brackets">]</div>
+                    </div>
+                    
+                    <div class="preset-matrices">
+                        <h3>预设矩阵示例</h3>
+                        <div class="preset-grid">
+                            <button class="preset-btn active" data-matrix="2,1,1,2">对称矩阵</button>
+                            <button class="preset-btn" data-matrix="1,0.5,0.5,1">剪切变换</button>
+                            <button class="preset-btn" data-matrix="2,0,0,0.5">缩放变换</button>
+                            <button class="preset-btn" data-matrix="3,1,0,2">上三角矩阵</button>
+                            <button class="preset-btn" data-matrix="1,2,2,1">非对称矩阵</button>
+                            <button class="preset-btn" data-matrix="1.5,0,0,1.5">均匀缩放</button>
+                            <button class="preset-btn" data-matrix="1,0,0,-1">反射变换</button>
+                            <button class="preset-btn" data-matrix="2,0,0,2">各向同性缩放</button>
+                            <button class="preset-btn" data-matrix="0.5,0,0,2">非均匀缩放</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="eigenvalues-section">
+                <h2><i class="fas fa-calculator"></i> 特征值与特征向量</h2>
+                
+                <div class="complex-warning" id="complexWarning">
+                    <i class="fas fa-exclamation-triangle"></i> 该矩阵有复数特征值，无法在实平面上可视化显示。
+                </div>
+                
+                <div class="eigen-container">
+                    <div class="eigen-value-box">
+                        <div class="eigen-label">第一个特征值与特征向量</div>
+                        <div class="eigen-value">λ₁ = <span id="lambda1">3.00</span></div>
+                        <div class="eigen-vector">v₁ = <span id="vector1">[1.00, 1.00]</span></div>
+                    </div>
+                    
+                    <div class="eigen-value-box">
+                        <div class="eigen-label">第二个特征值与特征向量</div>
+                        <div class="eigen-value">λ₂ = <span id="lambda2">1.00</span></div>
+                        <div class="eigen-vector">v₂ = <span id="vector2">[-1.00, 1.00]</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="right-panel">
+            <div class="visualization-header">
+                <h2><i class="fas fa-eye"></i> 变换可视化</h2>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="color-box original-grid-color"></div>
+                        <span>原始网格</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box transformed-grid-color"></div>
+                        <span>变换后网格</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box eigenvector1-color"></div>
+                        <span>特征向量 v₁</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box eigenvector2-color"></div>
+                        <span>特征向量 v₂</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="visualization-container">
+                <div class="canvas-container">
+                    <div class="canvas-title">
+                        <i class="fas fa-th"></i> 原始网格与特征向量
+                    </div>
+                    <div class="canvas-wrapper">
+                        <canvas id="originalCanvas"></canvas>
+                    </div>
+                </div>
+                
+                <div class="canvas-container">
+                    <div class="canvas-title">
+                        <i class="fas fa-project-diagram"></i> 变换后网格与特征向量
+                    </div>
+                    <div class="canvas-wrapper">
+                        <canvas id="transformedCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="explanation">
+            <h3><i class="fas fa-lightbulb"></i> 特征值与特征向量的几何意义</h3>
+            <div class="explanation-content">
+                <div class="explanation-column">
+                    <p>对于一个给定的线性变换，<span class="highlight">特征向量</span>是在该变换下方向保持不变的向量，而<span class="highlight">特征值</span>则是该特征向量在变换中的伸缩比例。</p>
+                    
+                    <ul>
+                        <li><strong>特征向量</strong>：在线性变换下只发生伸缩而不改变方向的向量。在上图中用红色和绿色箭头表示。</li>
+                        <li><strong>特征值</strong>：特征向量在变换中的伸缩倍数。如果特征值大于1，表示拉伸；介于0和1之间，表示收缩；小于0，表示反向。</li>
+                    </ul>
+                </div>
+                
+                <div class="explanation-column">
+                    <p><strong>几何意义</strong>：特征向量指示了变换的主要方向，特征值表示在这些方向上的"强度"或"缩放因子"。</p>
+                    
+                    <p>通过观察上方的变换演示，可以看到特征向量方向上的点仅沿着原方向伸缩，而其他方向的点则会同时发生旋转和伸缩。</p>
+                    
+                    <p>尝试更改矩阵值或选择不同的预设矩阵来观察特征向量和特征值的变化，直观理解线性变换的本质。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const a11Input = document.getElementById('a11');
+        const a12Input = document.getElementById('a12');
+        const a21Input = document.getElementById('a21');
+        const a22Input = document.getElementById('a22');
+        const presetButtons = document.querySelectorAll('.preset-btn');
+        const originalCanvas = document.getElementById('originalCanvas');
+        const transformedCanvas = document.getElementById('transformedCanvas');
+        const lambda1Span = document.getElementById('lambda1');
+        const lambda2Span = document.getElementById('lambda2');
+        const vector1Span = document.getElementById('vector1');
+        const vector2Span = document.getElementById('vector2');
+        const complexWarning = document.getElementById('complexWarning');
+        
+        // 获取Canvas上下文
+        const originalCtx = originalCanvas.getContext('2d');
+        const transformedCtx = transformedCanvas.getContext('2d');
+        
+        // 初始化矩阵值
+        let matrix = [[2, 1], [1, 2]];
+        
+        // 设置Canvas大小
+        function setupCanvasSize() {
+            const containerWidth = document.querySelector('.canvas-wrapper').clientWidth;
+            const containerHeight = document.querySelector('.canvas-wrapper').clientHeight;
+            
+            originalCanvas.width = containerWidth;
+            originalCanvas.height = containerHeight;
+            transformedCanvas.width = containerWidth;
+            transformedCanvas.height = containerHeight;
+            
+            drawVisualization();
+        }
+        
+        // 计算特征值和特征向量
+        function computeEigenvaluesAndVectors(matrix) {
+            const a = matrix[0][0];
+            const b = matrix[0][1];
+            const c = matrix[1][0];
+            const d = matrix[1][1];
+            
+            // 计算特征值：λ² - (a+d)λ + (ad - bc) = 0
+            const trace = a + d;
+            const determinant = a * d - b * c;
+            
+            // 判别式
+            const discriminant = trace * trace - 4 * determinant;
+            
+            // 检查是否有复数特征值
+            if (discriminant < 0) {
+                complexWarning.style.display = 'block';
+                return {
+                    hasComplex: true,
+                    lambda1: null,
+                    lambda2: null,
+                    v1: null,
+                    v2: null
+                };
+            }
+            
+            complexWarning.style.display = 'none';
+            
+            // 计算特征值
+            const sqrtDiscriminant = Math.sqrt(discriminant);
+            const lambda1 = (trace + sqrtDiscriminant) / 2;
+            const lambda2 = (trace - sqrtDiscriminant) / 2;
+            
+            // 计算特征向量
+            // 对于 λ1: (A - λI)v = 0
+            let v1, v2;
+            
+            if (b !== 0) {
+                v1 = [lambda1 - d, b];
+            } else if (c !== 0) {
+                v1 = [c, lambda1 - a];
+            } else {
+                v1 = [1, 0];
+            }
+            
+            // 对于 λ2
+            if (b !== 0) {
+                v2 = [lambda2 - d, b];
+            } else if (c !== 0) {
+                v2 = [c, lambda2 - a];
+            } else {
+                v2 = [0, 1];
+            }
+            
+            // 归一化特征向量
+            const normalize = (vec) => {
+                const length = Math.sqrt(vec[0]*vec[0] + vec[1]*vec[1]);
+                if (length === 0) return [0, 0];
+                return [vec[0]/length, vec[1]/length];
+            };
+            
+            v1 = normalize(v1);
+            v2 = normalize(v2);
+            
+            return {
+                hasComplex: false,
+                lambda1: lambda1,
+                lambda2: lambda2,
+                v1: v1,
+                v2: v2
+            };
+        }
+        
+        // 绘制原始网格和特征向量
+        function drawOriginalGrid(eigenData) {
+            const ctx = originalCtx;
+            const width = originalCanvas.width;
+            const height = originalCanvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const scale = Math.min(width, height) / 6;
+            
+            // 清空画布
+            ctx.clearRect(0, 0, width, height);
+            
+            // 绘制背景
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
+            ctx.fillRect(0, 0, width, height);
+            
+            // 绘制网格线 - 使用更深的颜色
+            ctx.beginPath();
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 1;
+            
+            // 垂直线
+            for (let i = -6; i <= 6; i++) {
+                const x = centerX + i * scale;
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+            }
+            
+            // 水平线
+            for (let i = -6; i <= 6; i++) {
+                const y = centerY + i * scale;
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+            }
+            
+            ctx.stroke();
+            
+            // 绘制坐标轴 - 使用更明显的颜色和宽度
+            ctx.beginPath();
+            ctx.strokeStyle = '#f1f5f9';
+            ctx.lineWidth = 2.5;
+            
+            // X轴
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(width, centerY);
+            
+            // Y轴
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, height);
+            
+            ctx.stroke();
+            
+            // 绘制坐标轴箭头
+            // X轴箭头
+            ctx.beginPath();
+            ctx.fillStyle = '#f1f5f9';
+            ctx.moveTo(width - 10, centerY - 5);
+            ctx.lineTo(width, centerY);
+            ctx.lineTo(width - 10, centerY + 5);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Y轴箭头
+            ctx.beginPath();
+            ctx.fillStyle = '#f1f5f9';
+            ctx.moveTo(centerX - 5, 10);
+            ctx.lineTo(centerX, 0);
+            ctx.lineTo(centerX + 5, 10);
+            ctx.closePath();
+            ctx.fill();
+            
+            // 绘制坐标轴标签
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText('x', width - 20, centerY - 10);
+            ctx.fillText('y', centerX + 10, 20);
+            
+            // 绘制刻度标记
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            
+            // X轴刻度
+            for (let i = -5; i <= 5; i++) {
+                if (i === 0) continue;
+                const x = centerX + i * scale;
+                ctx.fillText(i.toString(), x, centerY + 8);
+            }
+            
+            // Y轴刻度
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            for (let i = -5; i <= 5; i++) {
+                if (i === 0) continue;
+                const y = centerY + i * scale;
+                ctx.fillText(i.toString(), centerX - 8, y);
+            }
+            
+            // 绘制特征向量（如果存在）
+            if (!eigenData.hasComplex) {
+                // 特征向量 v1 (红色)
+                drawVector(ctx, centerX, centerY, eigenData.v1[0] * scale * 2.5, eigenData.v1[1] * scale * 2.5, '#ef5350', `v₁`, eigenData.lambda1);
+                
+                // 特征向量 v2 (绿色)
+                drawVector(ctx, centerX, centerY, eigenData.v2[0] * scale * 2.5, eigenData.v2[1] * scale * 2.5, '#4caf50', `v₂`, eigenData.lambda2);
+            }
+            
+            // 绘制单位圆
+            ctx.beginPath();
+            ctx.strokeStyle = '#64b5f6';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.arc(centerX, centerY, scale, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // 绘制原点
+            ctx.beginPath();
+            ctx.fillStyle = '#f1f5f9';
+            ctx.arc(centerX, centerY, 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // 绘制变换后的网格和特征向量
+        function drawTransformedGrid(eigenData) {
+            const ctx = transformedCtx;
+            const width = transformedCanvas.width;
+            const height = transformedCanvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const scale = Math.min(width, height) / 6;
+            
+            // 清空画布
+            ctx.clearRect(0, 0, width, height);
+            
+            // 绘制背景
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
+            ctx.fillRect(0, 0, width, height);
+            
+            // 绘制坐标轴 - 使用更明显的颜色和宽度
+            ctx.beginPath();
+            ctx.strokeStyle = '#f1f5f9';
+            ctx.lineWidth = 2.5;
+            
+            // X轴
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(width, centerY);
+            
+            // Y轴
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, height);
+            
+            ctx.stroke();
+            
+            // 绘制坐标轴箭头
+            // X轴箭头
+            ctx.beginPath();
+            ctx.fillStyle = '#f1f5f9';
+            ctx.moveTo(width - 10, centerY - 5);
+            ctx.lineTo(width, centerY);
+            ctx.lineTo(width - 10, centerY + 5);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Y轴箭头
+            ctx.beginPath();
+            ctx.fillStyle = '#f1f5f9';
+            ctx.moveTo(centerX - 5, 10);
+            ctx.lineTo(centerX, 0);
+            ctx.lineTo(centerX + 5, 10);
+            ctx.closePath();
+            ctx.fill();
+            
+            // 绘制坐标轴标签
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText('x', width - 20, centerY - 10);
+            ctx.fillText('y', centerX + 10, 20);
+            
+            // 绘制变换后的网格 - 使用更深的颜色
+            ctx.beginPath();
+            ctx.strokeStyle = '#64b5f6';
+            ctx.lineWidth = 1.2;
+            
+            // 应用矩阵变换到网格点
+            for (let i = -5; i <= 5; i++) {
+                for (let j = -5; j <= 5; j++) {
+                    // 原始点
+                    const x = i * scale;
+                    const y = j * scale;
+                    
+                    // 应用变换
+                    const tx = matrix[0][0] * x + matrix[0][1] * y;
+                    const ty = matrix[1][0] * x + matrix[1][1] * y;
+                    
+                    const canvasX = centerX + tx;
+                    const canvasY = centerY + ty;
+                    
+                    if (j === -5) {
+                        ctx.moveTo(canvasX, canvasY);
+                    } else {
+                        ctx.lineTo(canvasX, canvasY);
+                    }
+                }
+            }
+            
+            // 绘制垂直线
+            for (let i = -5; i <= 5; i++) {
+                for (let j = -5; j <= 5; j++) {
+                    // 原始点
+                    const x = j * scale;
+                    const y = i * scale;
+                    
+                    // 应用变换
+                    const tx = matrix[0][0] * x + matrix[0][1] * y;
+                    const ty = matrix[1][0] * x + matrix[1][1] * y;
+                    
+                    const canvasX = centerX + tx;
+                    const canvasY = centerY + ty;
+                    
+                    if (j === -5) {
+                        ctx.moveTo(canvasX, canvasY);
+                    } else {
+                        ctx.lineTo(canvasX, canvasY);
+                    }
+                }
+            }
+            
+            ctx.stroke();
+            
+            // 绘制特征向量（如果存在）
+            if (!eigenData.hasComplex) {
+                // 变换后的特征向量 v1 (红色)
+                const v1x = eigenData.v1[0] * scale * 2.5;
+                const v1y = eigenData.v1[1] * scale * 2.5;
+                const tv1x = matrix[0][0] * v1x + matrix[0][1] * v1y;
+                const tv1y = matrix[1][0] * v1x + matrix[1][1] * v1y;
+                
+                drawVector(ctx, centerX, centerY, tv1x, tv1y, '#ef5350', `T(v₁)`, eigenData.lambda1);
+                
+                // 变换后的特征向量 v2 (绿色)
+                const v2x = eigenData.v2[0] * scale * 2.5;
+                const v2y = eigenData.v2[1] * scale * 2.5;
+                const tv2x = matrix[0][0] * v2x + matrix[0][1] * v2y;
+                const tv2y = matrix[1][0] * v2x + matrix[1][1] * v2y;
+                
+                drawVector(ctx, centerX, centerY, tv2x, tv2y, '#4caf50', `T(v₂)`, eigenData.lambda2);
+            }
+            
+            // 绘制变换后的单位圆（椭圆）
+            ctx.beginPath();
+            ctx.strokeStyle = '#64b5f6';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            
+            // 绘制椭圆（变换后的圆）
+            const steps = 100;
+            for (let i = 0; i <= steps; i++) {
+                const angle = (i / steps) * Math.PI * 2;
+                const x = Math.cos(angle) * scale;
+                const y = Math.sin(angle) * scale;
+                
+                // 应用变换
+                const tx = matrix[0][0] * x + matrix[0][1] * y;
+                const ty = matrix[1][0] * x + matrix[1][1] * y;
+                
+                const canvasX = centerX + tx;
+                const canvasY = centerY + ty;
+                
+                if (i === 0) {
+                    ctx.moveTo(canvasX, canvasY);
+                } else {
+                    ctx.lineTo(canvasX, canvasY);
+                }
+            }
+            
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // 绘制原点
+            ctx.beginPath();
+            ctx.fillStyle = '#f1f5f9';
+            ctx.arc(centerX, centerY, 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // 绘制向量箭头
+        function drawVector(ctx, x, y, dx, dy, color, label, eigenvalue) {
+            // 绘制箭头线
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + dx, y + dy);
+            ctx.stroke();
+            
+            // 计算箭头角度
+            const angle = Math.atan2(dy, dx);
+            const arrowLength = 12;
+            
+            // 绘制箭头头部
+            ctx.beginPath();
+            ctx.fillStyle = color;
+            ctx.moveTo(x + dx, y + dy);
+            ctx.lineTo(
+                x + dx - arrowLength * Math.cos(angle - Math.PI / 6),
+                y + dy - arrowLength * Math.sin(angle - Math.PI / 6)
+            );
+            ctx.lineTo(
+                x + dx - arrowLength * Math.cos(angle + Math.PI / 6),
+                y + dy - arrowLength * Math.sin(angle + Math.PI / 6)
+            );
+            ctx.closePath();
+            ctx.fill();
+            
+            // 绘制标签
+            ctx.fillStyle = color;
+            ctx.font = 'bold 14px Arial';
+            const labelX = x + dx * 1.15;
+            const labelY = y + dy * 1.15;
+            
+            // 根据向量方向调整标签位置以避免重叠
+            let offsetX = 0, offsetY = 0;
+            if (Math.abs(dx) > Math.abs(dy)) {
+                offsetY = dy > 0 ? 15 : -15;
+            } else {
+                offsetX = dx > 0 ? 15 : -15;
+            }
+            
+            ctx.fillText(`${label} (λ=${eigenvalue.toFixed(2)})`, labelX + offsetX, labelY + offsetY);
+        }
+        
+        // 更新显示的特征值和特征向量
+        function updateEigenDisplay(eigenData) {
+            if (eigenData.hasComplex) {
+                lambda1Span.textContent = "复数";
+                lambda2Span.textContent = "复数";
+                vector1Span.textContent = "[无法显示]";
+                vector2Span.textContent = "[无法显示]";
+                return;
+            }
+            
+            lambda1Span.textContent = eigenData.lambda1.toFixed(2);
+            lambda2Span.textContent = eigenData.lambda2.toFixed(2);
+            vector1Span.textContent = `[${eigenData.v1[0].toFixed(2)}, ${eigenData.v1[1].toFixed(2)}]`;
+            vector2Span.textContent = `[${eigenData.v2[0].toFixed(2)}, ${eigenData.v2[1].toFixed(2)}]`;
+        }
+        
+        // 绘制可视化
+        function drawVisualization() {
+            const eigenData = computeEigenvaluesAndVectors(matrix);
+            updateEigenDisplay(eigenData);
+            drawOriginalGrid(eigenData);
+            drawTransformedGrid(eigenData);
+        }
+        
+        // 更新矩阵
+        function updateMatrix() {
+            matrix = [
+                [parseFloat(a11Input.value) || 0, parseFloat(a12Input.value) || 0],
+                [parseFloat(a21Input.value) || 0, parseFloat(a22Input.value) || 0]
+            ];
+            
+            drawVisualization();
+        }
+        
+        // 预设矩阵按钮点击事件
+        presetButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // 移除所有按钮的active类
+                presetButtons.forEach(btn => btn.classList.remove('active'));
+                
+                // 为当前按钮添加active类
+                this.classList.add('active');
+                
+                // 获取矩阵值
+                const matrixValues = this.dataset.matrix.split(',').map(Number);
+                
+                // 更新输入框
+                a11Input.value = matrixValues[0];
+                a12Input.value = matrixValues[1];
+                a21Input.value = matrixValues[2];
+                a22Input.value = matrixValues[3];
+                
+                // 更新矩阵并重绘
+                updateMatrix();
+            });
+        });
+        
+        // 输入框变化事件
+        a11Input.addEventListener('input', updateMatrix);
+        a12Input.addEventListener('input', updateMatrix);
+        a21Input.addEventListener('input', updateMatrix);
+        a22Input.addEventListener('input', updateMatrix);
+        
+        // 窗口大小改变时调整Canvas大小
+        window.addEventListener('resize', setupCanvasSize);
+        
+        // 初始化
+        function init() {
+            // 设置默认激活的预设按钮
+            document.querySelector('.preset-btn[data-matrix="2,1,1,2"]').classList.add('active');
+            
+            // 设置Canvas大小
+            setTimeout(() => {
+                setupCanvasSize();
+            }, 100);
+            
+            // 绘制初始可视化
+            drawVisualization();
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
